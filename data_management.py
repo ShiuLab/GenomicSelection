@@ -10,11 +10,22 @@ for i in range (1,len(sys.argv),2):
         G = sys.argv[i+1]
       if sys.argv[i] == "-pheno":
         P = sys.argv[i+1] 
+      if sys.argv[i] == "-trait":
+        T = sys.argv[i+1]
 
-g = pd.read_csv(G, sep=",")
-p = pd.read_csv(P)
+genotype_file = pd.read_csv(G)
+phenotype_file = pd.read_csv(P)
+
+# Average pheotype values for each line
+grouped = phenotype_file.groupby(['GHID'])[T].agg([np.sum, np.average]).reset_index()
+
+
+X = genotype_file.values  
+Y = phenotype_file
+
 
 print(g.head(3))
 print(p.head(4))
+print(grouped.head(3))
 
 
