@@ -31,7 +31,7 @@ print(df.head(3))
 X = df.drop('average', axis=1).values  
 Y = df.loc[:, 'average'].values
 
-print(X.shape())
-print(Y.shape())
+print(X.shape)
+print(Y.shape)
 
 # Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=10000, random_state=0)
