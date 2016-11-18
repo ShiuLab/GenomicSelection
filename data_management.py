@@ -21,16 +21,23 @@ import numpy as np
 import matplotlib.pyplot as plt
       
 class prediction:
-      
-      def RF(self, X, Y):
-            Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=10000, random_state=0)
-            print(Xtrain)
+
+      def RF(X, Y):
+        """ Predict trait using Random Forest """
+            Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=0.9, random_state=0)
+            print(Xtest)
             
-      
+      def NN(X, Y):
+        """ Predict trait using Neural Networks """
+            Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=0.9, random_state=0)
+            print(Xtest)   
+
+
 if __name__ == "__main__":      
       if len(sys.argv) <= 1:
             print(__doc__)
             exit()
+      
       for i in range (1,len(sys.argv),2):
             if sys.argv[i] == "-geno":          # Path to Genotype File
               G = sys.argv[i+1]
@@ -41,8 +48,7 @@ if __name__ == "__main__":
             if sys.argv[i] == "-m":             # Prediction method to use
               M = sys.argv[i+1]      
 
-      ### Data pre-processing
-      
+      ### Data pre-processing ### 
       genotype_file = pd.read_csv(G, index_col = "Entry")
       phenotype_file = pd.read_csv(P)
 
@@ -52,17 +58,24 @@ if __name__ == "__main__":
 
       # Merge genotype and phenotype files by line name (GHID/Entry)
       df = pd.concat([grouped, genotype_file], axis=1, join='inner')
-
       #print(df.head(3))     
 
       # Make X & Y for machine learning
       X = df.drop('average', axis=1).values  
       Y = df.loc[:, 'average'].values
-      print(X,Y)
+      
+      
+      ### Make predictions  ###
+      
       if M == "RF" or M == "RandomForest":
-            print("Here")   
             prediction.RF(X,Y)
-             
+      
+      elif M == "NN" or M == "NeuralNetworks":
+            prediction.NN(X,Y)
       else:
             print("Prediction method not available in this script")
+          
+      
+       ### Score Predictions ###
+          
       
