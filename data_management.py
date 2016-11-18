@@ -22,13 +22,16 @@ grouped = grouped.set_index("GHID")
 # Merge genotype and phenotype files by line name (GHID/Entry)
 df = pd.concat([grouped, genotype_file], axis=1, join='inner')
 
+print(genotype_file.shape())
+print(phenotype_file.shape())
 
-print(genotype_file.head(3))
-print(phenotype_file.head(4))
-print(grouped.head(3))
+print(df.head(3))     
 
-print(df.head(3))
-      
-
+# Make X & Y for machine learning
 X = df.drop('average', axis=1).values  
 Y = df.loc[:, 'average'].values
+
+print(X.shape())
+print(Y.shape())
+
+# Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=10000, random_state=0)
