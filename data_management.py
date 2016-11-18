@@ -59,7 +59,7 @@ if __name__ == "__main__":
       X = df.drop('average', axis=1).values  
       Y = df.loc[:, 'average'].values
 
-      if m == "RF" or m == "RandomForest":
+      if M == "RF" or M == "RandomForest":
             prediction.RF(X,Y)
              
       else:
