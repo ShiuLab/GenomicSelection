@@ -22,8 +22,8 @@ grouped = grouped.set_index("GHID")
 # Merge genotype and phenotype files by line name (GHID/Entry)
 df = pd.concat([grouped, genotype_file], axis=1, join='inner')
 
-print(genotype_file.shape())
-print(phenotype_file.shape())
+print(genotype_file.shape)
+print(phenotype_file.shape)
 
 print(df.head(3))     
 
