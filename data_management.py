@@ -23,12 +23,12 @@ import matplotlib.pyplot as plt
 class prediction:
 
       def RF(X, Y):
-        """ Predict trait using Random Forest """
+            """ Predict trait using Random Forest """
             Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=0.9, random_state=0)
             print(Xtest)
             
       def NN(X, Y):
-        """ Predict trait using Neural Networks """
+            """ Predict trait using Neural Networks """
             Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=0.9, random_state=0)
             print(Xtest)   
 
