@@ -24,8 +24,8 @@ X = genotype_file.values
 Y = phenotype_file
 
 
-print(g.head(3))
-print(p.head(4))
+print(genotype_file.head(3))
+print(phenotype_file.head(4))
 print(grouped.head(3))
 
 
