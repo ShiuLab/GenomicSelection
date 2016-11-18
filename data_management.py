@@ -17,7 +17,7 @@ phenotype_file = pd.read_csv(P)
 
 # Average pheotype values for each line
 grouped = phenotype_file.groupby(['GHID'])[T].agg([np.average]).reset_index()
-grouped.set_index("GHID")
+grouped = grouped.set_index("GHID")
 
 # Merge genotype and phenotype files by line name (GHID/Entry)
 df = pd.concat([grouped, genotype_file], axis=1, join='inner')
