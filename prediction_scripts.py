@@ -2,7 +2,8 @@
 PURPOSE:
 Run prediction models on GS data 
 
-If running in HPC you must set path to Miniconda in HPC:  export PATH=/mnt/home/azodichr/miniconda3/bin:$PATH
+If running in HPC you must set path to Miniconda in HPC:  
+
 
 
 INPUT:
@@ -43,7 +44,7 @@ class prediction:
       y_train, y_test = Y[train_index], Y[test_index]
       
       # Build and fit the RF Regressor 
-      model = RandomForestRegressor(n_estimators=numberTrees, min_samples_leaf = 5, min_samples_split=20, max_depth = 10, max_features="sqrt", random_state=42)  # , 
+      model = RandomForestRegressor(n_estimators=numberTrees, min_samples_leaf = 5, min_samples_split=20, max_depth = 10, max_features=0.33, random_state=42) 
 
       model.fit(X_train, y_train)
       
@@ -67,6 +68,42 @@ class prediction:
   def NN(X, Y, cv):
     """ Predict trait using Neural Networks """
     print(cv)
+
+  def SVM(X, Y, cv):
+    """ Predict trait using Support Vector Machine """
+    Y_TRUE = []
+    Y_PRED = []
+    Y_TRUE_train = []
+    Y_PRED_train = []
+
+    mse = []
+    r2 = []
+
+    for train_index, test_index in kf.split(X):
+      #print("TRAIN:", train_index, "TEST:", test_index)
+      X_train, X_test = X[train_index], X[test_index]
+      y_train, y_test = Y[train_index], Y[test_index]
+      
+      # Build and fit the RF Regressor 
+      model = svm.SVR(kernel='rbf', C=1e3) 
+
+      model.fit(X_train, y_train)
+      
+      # Make predictions (test and training sets)
+      y_pred = model.predict(X_test)
+      y_pred_train = model.predict(X_train)
+      
+
+      Y_TRUE = np.append(Y_TRUE, y_test)
+      Y_PRED = np.append(Y_PRED, y_pred)
+      Y_TRUE_train = np.append(Y_TRUE_train, y_train)
+      Y_PRED_train = np.append(Y_PRED_train, y_pred_train)
+
+      mse = np.append(mse, (mean_squared_error(y_test, y_pred)))
+      r2 = np.append(r2, (r2_score(y_test, y_pred)))
+
+    return Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2
+
 
   def FeatSel(X, Y):
     """Feature selection using DecisionTree on the whole dataframe
@@ -154,8 +191,15 @@ if __name__ == "__main__":
 
   elif M == "NN" or M == "NeuralNetworks":
     prediction.NN(X, Y, kf)
+  
+  elif M == "SVM" or M == "svm":
+    from sklearn import svm
+    Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2  = prediction.SVM(X, Y, kf)
+    
   else:
     print("Prediction method not available in this script")
+    print(__doc__)
+    exit()
       
   
   ### Score Predictions ###
