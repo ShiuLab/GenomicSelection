@@ -2,7 +2,7 @@
 PURPOSE:
 Run prediction models on GS data 
 
-If running in HPC you must set path to Miniconda in HPC:  
+If running in HPC, set path to Miniconda in HPC: $ export PATH=/mnt/home/azodichr/miniconda3/bin:$PATH
 
 
 
@@ -69,6 +69,9 @@ class prediction:
     """ Predict trait using Neural Networks """
     print(cv)
 
+
+    
+
   def SVM(X, Y, cv):
     """ Predict trait using Support Vector Machine """
     Y_TRUE = []
@@ -105,43 +108,9 @@ class prediction:
     return Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2
 
 
-  def FeatSel(X, Y):
-    """Feature selection using DecisionTree on the whole dataframe
-    Feature importance from the Random Forest Classifier is the Gini importance
-    (i.e. the normalized total reduction of the criterion for the decendent nodes
-      compared to the parent node brought by that feature across all trees.)
-    """
-    from math import sqrt
-    from sklearn.ensemble import RandomForestRegressor
-
-    n = 100   # Number of features to keep
-
-    FS_forest = RandomForestRegressor(criterion='mse', max_features= "sqrt", n_estimators=500, n_jobs=8)
-    
-    #Train the model & derive importance scores
-    FS_forest = FS_forest.fit(X, Y)
-    importances = FS_forest.feature_importances_
-
-    # Sort importance scores and keep top n
-    print(X)
-    print(X.columns)
-    print(X.values)
-    feat_names = list(X.columns.values)
-    temp_imp = pd.DataFrame(importances, columns = ["imp"], index=feat_names) 
-    indices = np.argsort(importances)[::-1]
-    indices_keep = indices[0:n]
-    fixed_index = []
-
-    good = [X.columns[i] for i in indices_keep]
-
-    X = X.loc[:,good]
-    print("Features selected using DecisionTree feature selection: %s" % str(good))
-    return(X)
 
 
 if __name__ == "__main__":  
-
-  FS = "False"
 
   if len(sys.argv) <= 1:
     print(__doc__)
@@ -156,8 +125,7 @@ if __name__ == "__main__":
       T = sys.argv[i+1]
     if sys.argv[i] == "-m":             # Prediction method to use
       M = sys.argv[i+1]
-    if sys.argv[i] == "-FS":            # Set to "True" if you want to perform feature selection using decision tres
-      FS = sys.argv[i+1]    
+  
 
   ### Data pre-processing ### 
   genotype_file = pd.read_csv(G, index_col = "Entry")
@@ -177,11 +145,7 @@ if __name__ == "__main__":
   X = df.drop('average', axis=1).values  
   Y = df.loc[:, 'average'].values
 
-  kf = KFold(n_splits=10, random_state = 42)   # set k-fold number
-
-  
-  if FS == "True" or FS == "T" or FS == "true": 
-    X = prediction.FeatSel(X,Y)
+  kf = KFold(shuffle = True, random_state = 42, n_splits=10)  #  # set k-fold number
   
   ### Make predictions  ###
   
@@ -195,6 +159,8 @@ if __name__ == "__main__":
   elif M == "SVM" or M == "svm":
     from sklearn import svm
     Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2  = prediction.SVM(X, Y, kf)
+
+
     
   else:
     print("Prediction method not available in this script")
