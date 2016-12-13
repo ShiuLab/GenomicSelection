@@ -44,7 +44,7 @@ class prediction:
       y_train, y_test = Y[train_index], Y[test_index]
       
       # Build and fit the RF Regressor 
-      model = RandomForestRegressor(n_estimators=numberTrees, min_samples_leaf = 5, min_samples_split=20, max_depth = 10, max_features=0.33, random_state=42) 
+      model = RandomForestRegressor(n_estimators=100, min_samples_leaf = 10, min_samples_split=20, max_depth = 5, max_features=0.5, random_state=42) 
 
       model.fit(X_train, y_train)
       
@@ -67,9 +67,58 @@ class prediction:
         
   def NN(X, Y, cv):
     """ Predict trait using Neural Networks """
-    print(cv)
+    from __future__ import division, print_function
+    from keras.callbacks import Callback
+    from keras.layers import Dense, Activation, Dropout
+    from keras.models import Sequential
+    from keras.optimizers import SGD, RMSprop
+    from keras.regularizers import l2
+    from keras.utils import np_utils
+    from sklearn import datasets
+    from sklearn.cross_validation import train_test_split
+    from sklearn.metrics import mean_squared_error, r2_score
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size=0.2, random_state=0)
+    Xtrain, Xval, Ytrain, Yval = train_test_split(Xtrain, Ytrain, test_size=0.2, random_state=0)
+    print(Xtrain.shape, Xval.shape, Xtest.shape, Ytrain.shape, Yval.shape, Ytest.shape)
+    Xshape = Xtrain.shape
+
+    model = Sequential()
+    model.add(Dense(20, input_dim=Xshape[1], activation='sigmoid',bias=True))
+    model.add(Dense(60, input_dim=Xshape[1], activation='sigmoid',bias=True))
+    model.add(Dense(30, input_dim=Xshape[1], activation='sigmoid',bias=True))
+
+    model.add(Dense(1, input_dim=Xshape[1], activation='sigmoid',bias=True))
+    
+    # training rate
+    sgd = SGD(lr=1)
+    model.compile(loss='mean_squared_error', optimizer=sgd, metrics=['accuracy'])
+    model.summary()
+    history = LossHistory()
+    
+    # train NN model
+    model.fit(Xtrain, Ytrain, batch_size=20, nb_epoch=1000, shuffle=True, validation_data=(Xval, Yval), callbacks=[history])
+    
+    
+    # Plot
+    plt.figure(1,figsize=(15, 5))
+    plt.subplot(121)
+    plt.plot(range(len(history.losses)), history.losses)
+    plt.xlabel("batch")
+    plt.ylabel("loss")
+    plt.grid()
+
+    plt.subplot(122)
+    plt.plot(range(len(history.accuracies)), history.accuracies)
+    plt.xlabel("batch")
+    plt.ylabel("acc")
+    plt.grid()
 
 
+    plt.show()
     
 
   def SVM(X, Y, cv):
@@ -88,7 +137,7 @@ class prediction:
       y_train, y_test = Y[train_index], Y[test_index]
       
       # Build and fit the RF Regressor 
-      model = svm.SVR(kernel='rbf', C=1e3) 
+      model = svm.SVR(kernel='rbf', C=1e2) 
 
       model.fit(X_train, y_train)
       
@@ -107,7 +156,13 @@ class prediction:
 
     return Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2
 
-
+class LossHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+        self.accuracies = []
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get("loss"))
+        self.accuracies.append(logs.get("acc"))
 
 
 if __name__ == "__main__":  
@@ -154,7 +209,14 @@ if __name__ == "__main__":
     Y_TRUE, Y_PRED, Y_TRUE_train, Y_PRED_train, mse, r2 = prediction.RF(X, Y, kf)
 
   elif M == "NN" or M == "NeuralNetworks":
-    prediction.NN(X, Y, kf)
+    Y_max = np.max(Y)
+    Y_min = np.min(Y)
+    for i in range(0,Y.size):
+        if((Y[i]-Y_min) > (1-selectionPercentage)*(Y_max-Y_min)):
+            Y[i] = 1
+        else:
+            Y[i] = 0
+    prediction.NN(X, Y)
   
   elif M == "SVM" or M == "svm":
     from sklearn import svm
